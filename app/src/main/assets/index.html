@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Dungeon Launcher</title>
+    <title>Game Dungeon Apps Panel</title>
     <style>
         * {
             box-sizing: border-box;
@@ -20,80 +20,46 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            padding: 20px;
+            border-left: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         header {
-            padding: 20px 40px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        h1 {
-            color: #ff4757;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 28px;
-            text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
-        }
-
-        .main-container {
-            display: flex;
-            flex: 1;
-            padding: 0 40px 40px 40px;
-            gap: 30px;
-            height: calc(100vh - 100px);
-        }
-
-        .section {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .game-dungeon {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .game-dungeon iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 12px;
-            background: #000;
-        }
-
-        .apps-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .section-title {
-            font-size: 20px;
-            margin-bottom: 16px;
+            font-size: 18px;
             color: #ffa502;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .clock {
+            font-size: 16px;
+            font-weight: bold;
+            color: #a4b0be;
         }
 
         .app-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
             gap: 16px;
             overflow-y: auto;
-            padding-right: 8px;
+            flex: 1;
+            padding-right: 6px;
         }
 
         .app-card {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.07);
             border-radius: 12px;
-            padding: 16px 8px;
+            padding: 14px 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -106,29 +72,29 @@
 
         .app-card:focus, .app-card:hover {
             border-color: #ff4757;
-            background: rgba(255, 71, 87, 0.2);
+            background: rgba(255, 71, 87, 0.25);
             transform: scale(1.08);
             box-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
         }
 
         .app-icon {
-            width: 56px;
-            height: 56px;
+            width: 48px;
+            height: 48px;
             object-fit: contain;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-radius: 8px;
         }
 
         .app-name {
-            font-size: 12px;
+            font-size: 11px;
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             width: 100%;
+            color: #f1f2f6;
         }
 
-        /* D-Pad Scrollbar Styling */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -141,28 +107,15 @@
 <body>
 
     <header>
-        <h1>Game Dungeon TV</h1>
-        <div id="clock" style="font-size: 20px; font-weight: bold; color: #a4b0be;"></div>
+        <div class="section-title">TV Apps</div>
+        <div id="clock" class="clock"></div>
     </header>
 
-    <div class="main-container">
-        <!-- Game Dungeon Main Portal -->
-        <div class="section game-dungeon">
-            <div class="section-title">Game Dungeon Portal</div>
-            <iframe id="dungeonFrame" src="the-game-dungeon/index.html" tabindex="0"></iframe>
-        </div>
-
-        <!-- Installed Apps Panel -->
-        <div class="section apps-panel">
-            <div class="section-title">Your Apps</div>
-            <div class="app-grid" id="appGrid">
-                <!-- Dynamically populated by Java Bridge -->
-            </div>
-        </div>
+    <div class="app-grid" id="appGrid">
+        <!-- Dynamically populated by Java AndroidBridge -->
     </div>
 
     <script>
-        // Update Live Clock
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -170,7 +123,6 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Fetch installed apps from Java AndroidBridge
         function loadInstalledApps() {
             const appGrid = document.getElementById('appGrid');
             appGrid.innerHTML = '';
@@ -179,21 +131,21 @@
                 try {
                     const apps = JSON.parse(AndroidBridge.getInstalledApps());
 
-                    apps.forEach((app, index) => {
+                    apps.forEach((app) => {
                         const card = document.createElement('div');
                         card.className = 'app-card';
-                        card.tabIndex = 0; // Enables D-Pad navigation
-                        
+                        card.tabIndex = 0; // Enables TV Remote D-Pad focus
+
                         const iconImg = app.icon && app.icon.length > 0 
                             ? app.icon 
-                            : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="%23ffa502"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>';
+                            : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="%23ffa502"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>';
 
                         card.innerHTML = `
                             <img class="app-icon" src="${iconImg}" alt="${app.name}">
                             <div class="app-name">${app.name}</div>
                         `;
 
-                        // Handle Remote Click / Enter key
+                        // Handle D-Pad Enter / Mouse click
                         card.addEventListener('click', () => {
                             AndroidBridge.launchApp(app.package);
                         });
@@ -207,13 +159,12 @@
                         appGrid.appendChild(card);
                     });
                 } catch (e) {
-                    appGrid.innerHTML = '<div style="color:#ff4757; padding:10px;">Error parsing installed apps.</div>';
+                    appGrid.innerHTML = '<div style="color:#ff4757; padding:10px;">Error reading installed apps.</div>';
                 }
             } else {
-                // Browser Preview Fallback
                 appGrid.innerHTML = `
                     <div class="app-card" tabindex="0">
-                        <img class="app-icon" src="https://via.placeholder.com/56" alt="Test App">
+                        <img class="app-icon" src="https://via.placeholder.com/48" alt="App">
                         <div class="app-name">Sample App</div>
                     </div>
                 `;
