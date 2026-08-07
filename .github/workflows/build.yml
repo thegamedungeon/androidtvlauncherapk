@@ -21,10 +21,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Gradle 8.5
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: '8.5'
+
       - name: Grant Execute Permissions
         run: chmod -R +x .
 
-      - name: Build APK with System Gradle
+      - name: Build APK
         run: gradle assembleDebug --no-daemon
 
       - name: Upload APK Artifact
