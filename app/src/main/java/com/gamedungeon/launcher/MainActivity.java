@@ -3,7 +3,6 @@ package com.gamedungeon.launcher;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -12,10 +11,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Base64;
+import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,41 +27,75 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
-    private WebView webView;
+    private WebView dungeonWebView;
+    private WebView appsWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        webView = new WebView(this);
-        setContentView(webView);
+        LinearLayout rootLayout = new LinearLayout(this);
+        rootLayout.setOrientation(LinearLayout.HORIZONTAL);
+        rootLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+        rootLayout.setBackgroundColor(0xFF0D0E15);
 
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setAllowFileAccess(true);
-        webSettings.setAllowContentAccess(true);
-        webSettings.setDatabaseEnabled(true);
-        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setAllowFileAccess(true);
-        webSettings.setAllowContentAccess(true);
-        webSettings.setAllowFileAccessFromFileURLs(true);
-        webSettings.setAllowUniversalAccessFromFileURLs(true);
+        dungeonWebView = new WebView(this);
+        LinearLayout.LayoutParams dungeonParams = new LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                2.2f // Takes 68% of horizontal screen width
+        );
+        dungeonWebView.setLayoutParams(dungeonParams);
 
-        webView.setWebViewClient(new WebViewClient());
-        webView.addJavascriptInterface(new WebAppInterface(this), "AndroidBridge");
+        // Configure persistent Web Storage & DOM Storage for Game Dungeon
+        WebSettings dungeonSettings = dungeonWebView.getSettings();
+        dungeonSettings.setJavaScriptEnabled(true);
+        dungeonSettings.setDomStorageEnabled(true);
+        dungeonSettings.setDatabaseEnabled(true);
+        dungeonSettings.setAllowFileAccess(true);
+        dungeonSettings.setAllowContentAccess(true);
+        dungeonSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
-        webView.loadUrl("file:///android_asset/index.html");
+        // Enable cookies and session persistence
+        CookieManager.getInstance().setAcceptCookie(true);
+        CookieManager.getInstance().setAcceptThirdPartyCookies(dungeonWebView, true);
+
+        dungeonWebView.setWebViewClient(new WebViewClient());
+        dungeonWebView.loadUrl("https://thegamedungeon.qzz.io/");
+
+        appsWebView = new WebView(this);
+        LinearLayout.LayoutParams appsParams = new LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                1.0f // Takes 32% of horizontal screen width
+        );
+        appsWebView.setLayoutParams(appsParams);
+
+        WebSettings appsSettings = appsWebView.getSettings();
+        appsSettings.setJavaScriptEnabled(true);
+        appsSettings.setDomStorageEnabled(true);
+        appsSettings.setAllowFileAccess(true);
+        appsSettings.setAllowContentAccess(true);
+
+        appsWebView.setWebViewClient(new WebViewClient());
+        appsWebView.addJavascriptInterface(new WebAppInterface(this), "AndroidBridge");
+        appsWebView.loadUrl("file:///android_asset/index.html");
+
+        rootLayout.addView(dungeonWebView);
+        rootLayout.addView(appsWebView);
+
+        setContentView(rootLayout);
     }
 
     @Override
     public void onBackPressed() {
-        // Prevent back button from exiting launcher
-        if (webView.canGoBack()) {
-            webView.goBack();
+        if (dungeonWebView.canGoBack()) {
+            dungeonWebView.goBack();
+        } else if (appsWebView.canGoBack()) {
+            appsWebView.goBack();
         }
     }
 
@@ -86,7 +122,7 @@ public class MainActivity extends Activity {
                     String label = ri.loadLabel(pm).toString();
                     String packageName = ri.activityInfo.packageName;
 
-                    // Exclude self from list
+                    // Exclude self from launcher list
                     if (packageName.equals(mContext.getPackageName())) continue;
 
                     Drawable icon = ri.loadIcon(pm);
