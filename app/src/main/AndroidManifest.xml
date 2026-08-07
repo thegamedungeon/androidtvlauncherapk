@@ -24,3 +24,34 @@
         </activity>
     </application>
 </manifest>
+<!-- Allows launcher to discover all installed apps and their icons -->
+<uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+<application
+    android:allowBackup="true"
+    android:icon="@android:drawable/sym_def_app_icon"
+    android:label="Game Dungeon Launcher"
+    android:supportsRtl="true"
+    android:usesCleartextTraffic="true"
+    android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+    <activity
+        android:name=".MainActivity"
+        android:exported="true"
+        android:launchMode="singleTask"
+        android:stateNotNeeded="true"
+        android:configChanges="orientation|screenSize|keyboardHidden">
+        
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+            <!-- Registers app as a system Home Screen Launcher -->
+            <category android:name="android.intent.category.HOME" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+    </activity>
+
+</application>
+
